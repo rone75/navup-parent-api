@@ -29,10 +29,12 @@ $ATTENDUS = array(
     'e_progression' => 'SELECT, INSERT, UPDATE, DELETE',
     'e_jeton_utilise' => 'SELECT, INSERT, UPDATE, DELETE',
     'e_limite' => 'SELECT, INSERT, UPDATE, DELETE',
+    // Billet de rendez-vous : inséré ici, lu et purgé par navup-api
+    'e_billet' => 'INSERT',
 );
 // Ce que l'appli ne doit jamais pouvoir lire
 $INTERDITES = array('d_contact', 'd_declaration', 'd_enfant', 'd_problematique', 'd_note', 'd_evenement', 'd_consentement',
-    'u_users', 'u_token', 'u_audit', 'v_vente', 'v_paiement', 'm_message', 's_commande', 'r_rdv', 'i_interaction', 't_tache', 'a_compte', 'f_semaine', 'f_formation');
+    'u_users', 'u_token', 'u_audit', 'v_vente', 'v_paiement', 'm_message', 's_commande', 'r_rdv', 'r_reservation', 'r_lien', 'r_disponibilite', 'r_indisponibilite', 'u_agenda', 'i_interaction', 't_tache', 'a_compte', 'f_semaine', 'f_formation');
 
 mysqli_report(MYSQLI_REPORT_OFF);
 $sql = @new mysqli($_DB['hote'], $_DB['utilisateur'], $_DB['mot_de_passe'], $_DB['base']);

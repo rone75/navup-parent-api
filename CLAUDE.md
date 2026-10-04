@@ -9,13 +9,14 @@ Cahier de l'écosystème : `~/Documents/nabil/Cahier de charges NavUp Academy.pd
 - **navup-api décide, cette API sert.** Ouvrir un compte, régler ses dates, le suspendre, révoquer un accès, créer un lien d'accès, envoyer un e-mail : tout cela est dans navup-api. Ici : vérifier un lien, tenir le mot de passe et les sessions, servir le programme et ses médias, noter la progression.
 - **La base est le contrat.** Cette API ne partage aucun code avec navup-api et ne recopie aucun de ses réglages : ce qui décide de l'accès est dans la base. Elle lit les vues `a_acces` (le compte, ses dates, prénom, nom, e-mail) et `a_semaine` (le jour où chaque semaine se débloque), `a_jeton`, `f_sujet`, `f_fichier` ; elle écrit dans ses seules tables `e_*`. Elle n'a aucun droit sur `d_contact`, les données familiales, les ventes, les e-mails ni les utilisateurs internes (`sql/000_utilisateur.exemple.sql`, contrôlé par `script-cgi/verifier-droits.php`).
 - navup-api lit les tables `e_*` (fiche d'un dossier : mot de passe créé, dernière connexion, sujets terminés, préférence d'e-mail) et les purge ; elle n'y écrit pas.
+- **Rendez-vous** (étape 6b de la Tour) : ils s'écrivent dans navup-api, par ses seules méthodes. Cette API n'en lit ni n'en écrit aucun : elle délivre un **billet** (`v1/rendez-vous/billet/`, session vivante et accès ouvert exigés) que le parent présente à `navup-api/v1/public/rendez-vous/espace/`. Le billet est une ligne de `e_billet` (empreinte seule) sur laquelle cette API n'a que le droit `INSERT` ; navup-api le lit, revérifie la session et le compte, décide de sa durée et le purge. Pas de secret partagé entre les deux API, aucune règle de rendez-vous recopiée ici.
 
 ## Architecture
 
 - Pas de framework, pas de composer, pas d'autoload. Un dossier par ressource : `v1/<ressource>/index.php`. URL locale : `http://localhost/navup-parent-api/v1/<ressource>/`.
 - `include/package.{mysql,response,header,saisie}.php` : copies de navup-api (une correction se reporte dans les deux). `package.limite.php` (limiteur, table `e_limite`), `package.session.php` (`Session` : compte, accès, mot de passe, sessions, lien), `package.programme.php` (`Programme`), `package.media.php` (`Media`), `package.progression.php` (`Progression`).
 - `require/param.php` : réglages versionnés (durées de session, longueur du mot de passe, limiteur, fenêtre des médias). `require/secret.php` (hors dépôt) : `$_PROD`, `$_DB`, `$_CORS_ORIGINES`, `$_PATH_API`, `$_CLE_MEDIA`, `$_DOSSIER_MEDIAS`. Ne jamais le lire ni l'afficher.
-- `sql/` : `100_espace.sql` (tables `e_*`), `000_utilisateur.exemple.sql` (droits). `script-cgi/` : contrôles en lecture seule.
+- `sql/` : `100_espace.sql` (tables `e_*`), `110_billet.sql` (`e_billet`), `000_utilisateur.exemple.sql` (droits). `script-cgi/` : contrôles en lecture seule.
 - `.htaccess` bloque `.git`, `include/`, `require/`, `sql/`, `script-cgi/`, les fichiers cachés et les `.sql .md .log`.
 
 ## Pattern d'un endpoint

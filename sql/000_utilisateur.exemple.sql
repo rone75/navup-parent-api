@@ -1,5 +1,5 @@
 -- Utilisateur MariaDB de l'appli des parents : il ne lit que ce que l'appli doit voir et n'écrit que dans ses tables.
--- À exécuter par un administrateur MariaDB (root), APRÈS navup-api/sql/050_parents.sql et sql/100_espace.sql :
+-- À exécuter par un administrateur MariaDB (root), APRÈS navup-api/sql/050_parents.sql, sql/100_espace.sql et sql/110_billet.sql :
 --   cp sql/000_utilisateur.exemple.sql sql/000_utilisateur.local.sql   (ignoré par git)
 --   remplacer <mot de passe> (le même que dans require/secret.php), puis : sudo mariadb < sql/000_utilisateur.local.sql
 -- Rejouable : les droits sont retirés puis reposés. script-cgi/verifier-droits.php compare le résultat à cette liste.
@@ -24,5 +24,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON navup.e_session TO 'navup_parents'@'loca
 GRANT SELECT, INSERT, UPDATE, DELETE ON navup.e_progression TO 'navup_parents'@'localhost';
 GRANT SELECT, INSERT, UPDATE, DELETE ON navup.e_jeton_utilise TO 'navup_parents'@'localhost';
 GRANT SELECT, INSERT, UPDATE, DELETE ON navup.e_limite TO 'navup_parents'@'localhost';
+-- Billet de rendez-vous : cette API l'insère, navup-api le lit et le purge (sql/110_billet.sql)
+GRANT INSERT ON navup.e_billet TO 'navup_parents'@'localhost';
 
 FLUSH PRIVILEGES;

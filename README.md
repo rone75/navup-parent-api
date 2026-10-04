@@ -15,6 +15,7 @@ Prérequis : Apache + php-fpm (DocumentRoot `/var/www`, `AllowOverride All`), PH
    ```bash
    mariadb -unavup -p navup < /var/www/navup-api/sql/050_parents.sql   # colonnes d'accès, a_jeton, vues a_acces et a_semaine
    mariadb -unavup -p navup < sql/100_espace.sql                       # tables e_* de l'appli
+   mariadb -unavup -p navup < sql/110_billet.sql                       # billet des rendez-vous (étape 6b de la Tour)
    ```
 
 2. L'utilisateur restreint de l'appli, par un administrateur MariaDB :
@@ -23,6 +24,8 @@ Prérequis : Apache + php-fpm (DocumentRoot `/var/www`, `AllowOverride All`), PH
    cp sql/000_utilisateur.exemple.sql sql/000_utilisateur.local.sql    # ignoré par git ; y écrire le mot de passe
    sudo mariadb < sql/000_utilisateur.local.sql
    ```
+
+   Le fichier se rejoue : quand un droit s'ajoute au modèle (le droit `INSERT` sur `e_billet`, par exemple), reporter la ligne dans la copie locale et relancer la commande.
 
 3. `require/secret.php` d'après `secret.exemple.php` : ce mot de passe, les origines du front, l'adresse publique de l'API (`$_PATH_API`), la clé de signature des médias (`$_CLE_MEDIA`, 32 octets tirés au hasard), le dossier des médias de navup-api.
 
@@ -58,6 +61,7 @@ JSON préfixé par `)]}',` et un saut de ligne (retiré nativement par Angular).
 | `GET v1/sujets/` `?id=` | un sujet : pages de la fiche et audio en adresses signées, progression, voisins | accès ouvert, semaine débloquée |
 | `PUT v1/progression/` `{id_sujet, version, position?, termine?}` | position d'écoute, « terminé » | accès ouvert |
 | `GET`, `HEAD v1/media/` `?f=&p=&n=&e=&s=` | l'audio, le PDF, ou la page `p` d'une fiche | adresse signée |
+| `POST v1/rendez-vous/billet/` | un billet pour les rendez-vous, à présenter à `navup-api/v1/public/rendez-vous/espace/` → `{billet}` | accès ouvert |
 
 Règles tenues par l'API :
 
