@@ -1,0 +1,6 @@
+# Secrets et réglages de la machine (identifiants de base, clé de signature des médias) : jamais dans le dépôt
+require/secret.php
+# Création de l'utilisateur MariaDB avec son mot de passe : fichier local, tiré de 000_utilisateur.exemple.sql
+sql/000_utilisateur.local.sql
+.vscode/
+*.log
