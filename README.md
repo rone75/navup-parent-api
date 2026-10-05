@@ -16,6 +16,7 @@ Prérequis : Apache + php-fpm (DocumentRoot `/var/www`, `AllowOverride All`), PH
    mariadb -unavup -p navup < /var/www/navup-api/sql/050_parents.sql   # colonnes d'accès, a_jeton, vues a_acces et a_semaine
    mariadb -unavup -p navup < sql/100_espace.sql                       # tables e_* de l'appli
    mariadb -unavup -p navup < sql/110_billet.sql                       # billet des rendez-vous (étape 6b de la Tour)
+   mariadb -unavup -p navup < sql/120_demandes.sql                     # billet des données, demandes de suppression (étape 8)
    ```
 
 2. L'utilisateur restreint de l'appli, par un administrateur MariaDB :
@@ -62,6 +63,8 @@ JSON préfixé par `)]}',` et un saut de ligne (retiré nativement par Angular).
 | `PUT v1/progression/` `{id_sujet, version, position?, termine?}` | position d'écoute, « terminé » | accès ouvert |
 | `GET`, `HEAD v1/media/` `?f=&p=&n=&e=&s=` | l'audio, le PDF, ou la page `p` d'une fiche | adresse signée |
 | `POST v1/rendez-vous/billet/` | un billet pour les rendez-vous, à présenter à `navup-api/v1/public/rendez-vous/espace/` → `{billet}` | accès ouvert |
+| `POST v1/profil/donnees/` `{pass}` | « Télécharger mes données » : après le mot de passe retapé, un billet « donnees » (une fois, quelques minutes) à présenter à `navup-api/v1/public/donnees/` → `{billet}` | session |
+| `POST v1/profil/suppression/` `{pass}` | « Supprimer mon compte » : la demande part à NavUp (`e_demande`), l'espace se ferme aussitôt (sessions et mot de passe) | session |
 
 Règles tenues par l'API :
 
@@ -72,6 +75,7 @@ Règles tenues par l'API :
 - **Révocation** : une session ou un mot de passe antérieurs à `a_compte.date_revocation` ne valent plus rien (e-mail du dossier modifié, « Réinitialiser l'accès » dans la Tour de contrôle).
 - **Médias** : jamais servis par Apache. L'adresse est signée (HMAC) et liée à la session, valable de 6 à 12 heures par fenêtre fixe ; à chaque demande, la session, l'accès, la publication du sujet et le déblocage de sa semaine sont revérifiés. Lecture par plages (`Range` → 206, 416 hors fichier), `ETag`, cache privé. Tout refus est un 403 sans explication.
 - **Progression** : chaque écriture augmente la version de la ligne ; une écriture partie d'une version dépassée n'est pas faite, `conflit` est vrai et la réponse porte l'état du serveur. « Terminé » ne se déduit jamais de l'écoute.
+- **Droits sur ses données** (étape 8 de la Tour) : un mot de passe retapé compte comme une connexion ratée s'il est faux (même limiteur). Cette API n'écrit que le billet (`e_billet.objet = 'donnees'`) et la demande (`e_demande`, droit `INSERT` seul) ; navup-api lit le dossier, rend le fichier, prévient l'administrateur et efface.
 - **Colonnes servies par liste explicite** : aucun brouillon, aucun chemin de fichier, aucune empreinte entière ne sort.
 
 ## Tests manuels

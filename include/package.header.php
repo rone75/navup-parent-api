@@ -83,6 +83,8 @@ class Header
         header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
         header("Pragma: no-cache"); // HTTP 1.0.
         header("Expires: 0"); // Proxies.
+        $this->securite($option == 'json');
+
 
         $origin = isset($_SERVER['HTTP_ORIGIN']) ? trim((string) $_SERVER['HTTP_ORIGIN']) : '';
 
@@ -143,5 +145,18 @@ class Header
             }
         }
         return null;
+    }
+
+    /**
+     * En-têtes de sécurité de toute réponse de l'API (étape 8) : pas de devinette du type, pas d'adresse transmise à un
+     * autre site, jamais dans un cadre. Une réponse JSON n'a rien à charger : politique de contenu fermée.
+     * HSTS se pose au niveau d'Apache, en HTTPS seulement (deploiement/).
+     */
+    private function securite($json)
+    {
+        header('X-Content-Type-Options: nosniff');
+        header('Referrer-Policy: no-referrer');
+        header('X-Frame-Options: DENY');
+        header($json ? "Content-Security-Policy: default-src 'none'; frame-ancestors 'none'" : "Content-Security-Policy: frame-ancestors 'none'");
     }
 }

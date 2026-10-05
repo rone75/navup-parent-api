@@ -26,5 +26,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON navup.e_jeton_utilise TO 'navup_parents'
 GRANT SELECT, INSERT, UPDATE, DELETE ON navup.e_limite TO 'navup_parents'@'localhost';
 -- Billet de rendez-vous : cette API l'insère, navup-api le lit et le purge (sql/110_billet.sql)
 GRANT INSERT ON navup.e_billet TO 'navup_parents'@'localhost';
+GRANT INSERT ON navup.e_demande TO 'navup_parents'@'localhost';
 
 FLUSH PRIVILEGES;

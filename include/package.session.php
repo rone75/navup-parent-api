@@ -193,6 +193,27 @@ class Session
         return $utilisable && $pass !== null && $bon;
     }
 
+    /**
+     * Mot de passe retapé avant un geste sur ses données (télécharger, supprimer son compte). Les essais ratés comptent
+     * comme à la connexion, pour ce compte et cette adresse : 400 s'il est faux (la session reste bonne), 429 au-delà.
+     */
+    public function exigerMotDePasse($compte, $obf)
+    {
+        global $Response, $_LIMITE_CONNEXION;
+
+        $ip = Limite::ip();
+        $cle = Limite::cleEmail('mdp', $compte->email);
+        list($nb, $reste) = Limite::lire($cle, $ip);
+        if ($nb >= (int) $_LIMITE_CONNEXION[0]) {
+            $Response->rateLimitExceeded("Trop d'essais. Réessayez dans " . (int) ceil($reste / 60) . " min.", $reste);
+        }
+        if (!$this->verifier($compte, $this->decoder($obf))) {
+            Limite::compter($cle, $ip, (int) $_LIMITE_CONNEXION[1]);
+            $Response->validationError("Ce n'est pas votre mot de passe.");
+        }
+        Limite::effacer($cle, $ip);
+    }
+
     /** Écrit le mot de passe d'un compte (création ou remplacement). Sans transaction : l'appelant la tient. */
     public function ecrireMotDePasse($id_compte, $pass)
     {

@@ -11,6 +11,8 @@ Cahier de l'écosystème : `~/Documents/nabil/Cahier de charges NavUp Academy.pd
 - navup-api lit les tables `e_*` (fiche d'un dossier : mot de passe créé, dernière connexion, sujets terminés, préférence d'e-mail) et les purge ; elle n'y écrit pas.
 - **Rendez-vous** (étape 6b de la Tour) : ils s'écrivent dans navup-api, par ses seules méthodes. Cette API n'en lit ni n'en écrit aucun : elle délivre un **billet** (`v1/rendez-vous/billet/`, session vivante et accès ouvert exigés) que le parent présente à `navup-api/v1/public/rendez-vous/espace/`. Le billet est une ligne de `e_billet` (empreinte seule) sur laquelle cette API n'a que le droit `INSERT` ; navup-api le lit, revérifie la session et le compte, décide de sa durée et le purge. Pas de secret partagé entre les deux API, aucune règle de rendez-vous recopiée ici.
 
+- **Données du parent** (étape 8 de la Tour) : « Télécharger mes données » et « Supprimer mon compte » passent par un billet et par une demande que navup-api traite ; cette API ne lit jamais le dossier.
+
 ## Architecture
 
 - Pas de framework, pas de composer, pas d'autoload. Un dossier par ressource : `v1/<ressource>/index.php`. URL locale : `http://localhost/navup-parent-api/v1/<ressource>/`.
