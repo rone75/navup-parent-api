@@ -204,8 +204,43 @@ class Programme
     }
 
     /**
-     * Le contenu d'un sujet ouvert : sa fiche (une adresse signée par page, et le PDF), son audio (adresse signée,
-     * durée), où en est l'écoute, et ses voisins pour passer de l'un à l'autre. $s : ligne rendue par accessible().
+     * Le texte d'une fiche mis en blocs par navup-api (Formation::rendreTexte(), à côté du PDF), mot pour mot ; null
+     * quand il manque ou ne se lit pas : la fiche se montre alors en images. Seuls les blocs connus passent, chacun
+     * avec ses seuls champs.
+     */
+    private function texteFiche($empreinte)
+    {
+        global $_DOSSIER_MEDIAS;
+
+        $chemin = rtrim($_DOSSIER_MEDIAS, '/') . '/' . $empreinte . '.texte.json';
+        $lu = is_file($chemin) ? json_decode((string) @file_get_contents($chemin), true) : null;
+        if (!is_array($lu) || ($lu['version'] ?? null) !== 1 || !is_array($lu['blocs'] ?? null)) {
+            return null;
+        }
+        $blocs = array();
+        foreach ($lu['blocs'] as $b) {
+            $type = is_array($b) ? ($b['type'] ?? null) : null;
+            if ($type === 'liste' && is_array($b['elements'] ?? null) && count($b['elements']) > 0) {
+                foreach ($b['elements'] as $e) {
+                    if (!is_string($e)) {
+                        return null;
+                    }
+                }
+                $blocs[] = array('type' => 'liste', 'elements' => array_values($b['elements']));
+            } elseif (in_array($type, array('surtitre', 'titre', 'intertitre', 'paragraphe', 'mention'), true) && is_string($b['texte'] ?? null)) {
+                $blocs[] = array('type' => $type, 'texte' => $b['texte']);
+            } else {
+                return null;
+            }
+        }
+
+        return count($blocs) > 0 ? $blocs : null;
+    }
+
+    /**
+     * Le contenu d'un sujet ouvert : sa fiche (son texte mis en blocs, une adresse signée par page, et le PDF), son
+     * audio (adresse signée, durée), où en est l'écoute, et ses voisins pour passer de l'un à l'autre.
+     * $s : ligne rendue par accessible().
      */
     public function sujet($compte, $s, $id_session, $aujourdhui = null)
     {
@@ -233,6 +268,7 @@ class Programme
                 }
             }
             $ficheSortie = array(
+                'texte' => $this->texteFiche($fiche->empreinte),
                 'pages' => $pages,
                 'largeur' => $largeur,
                 'hauteur' => $hauteur,

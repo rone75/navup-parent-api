@@ -35,7 +35,7 @@ Comme navup-api : includes explicites, `$H->cors('json')`, puis les globales que
 - Un lien d'accès ne passe jamais dans une adresse (journal d'accès) : corps de requête seulement. Son usage unique tient à `INSERT IGNORE` dans `e_jeton_utilise`, dans la transaction qui écrit le mot de passe.
 - Colonnes servies par liste explicite. Jamais : un sujet non publié, un chemin de fichier, une empreinte entière, un prix.
 - `v1/media/` n'écrit rien (ni limiteur, ni prolongation de session) et ferme la base avant d'émettre. `Content-Length` ne s'écrit que dans `Media::envoyer()`.
-- Cette API ne lance aucun programme et n'écrit aucun fichier : le rendu des fiches et la conversion des audios sont dans navup-api.
+- Cette API ne lance aucun programme et n'écrit aucun fichier : le rendu des fiches et la conversion des audios sont dans navup-api. Elle lit le texte d'une fiche que navup-api a mis en blocs à côté du PDF (`<empreinte>.texte.json`, `Programme::texteFiche()`) et n'en sert que les blocs connus (`fiche.texte` ; null s'il manque ou ne se lit pas : le front montre alors les images).
 - Aucune donnée personnelle dans un mail d'erreur ni dans un journal. Messages au parent en français, sans jargon.
 - Compatibilité PHP 8.2+.
 
